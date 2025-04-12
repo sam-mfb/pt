@@ -1,9 +1,11 @@
+import React, { useCallback } from 'react';
 import { Exercise } from '../types';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useTimer } from './TimerProvider';
 import { formatDuration } from '../utils/dateUtils';
 import { deleteExercise } from '../store/slices/exerciseSlice';
-import { startSession, completeSession, cancelSession } from '../store/slices/sessionSlice';
+import { startSession, completeSession, completeRep, cancelSession } from '../store/slices/sessionSlice';
+import { useAppSelector } from '../hooks/useAppSelector';
 
 interface ExerciseItemProps {
   exercise: Exercise;
@@ -17,31 +19,97 @@ export const ExerciseItem = ({
   completedCount,
   inProgressSessionId,
   onEdit,
-}: ExerciseItemProps): JSX.Element => {
+}: ExerciseItemProps) => {
   const dispatch = useAppDispatch();
-  const { startTimer, stopTimer, isRunning, seconds } = useTimer();
+  // Get timer functions from context
+  const timer = useTimer();
+  const { 
+    startTimer, 
+    pauseTimer, 
+    resumeTimer, 
+    resetTimer, 
+    restartTimer, 
+    isRunning, 
+    seconds 
+  } = timer;
   
-  // Calculate progress percentage
+  // Get current session to access completedReps
+  const currentSession = useAppSelector(state => {
+    if (!inProgressSessionId) return null;
+    
+    const todayRecord = state.sessions.history.find(
+      (record: any) => record.date === state.sessions.currentDate
+    );
+    
+    if (!todayRecord) return null;
+    
+    return todayRecord.sessions.find((session: any) => session.id === inProgressSessionId);
+  });
+  
+  // Calculate set progress percentage
   const progressPercentage = (completedCount / exercise.sets) * 100;
+  
+  // Calculate rep progress for current session
+  const completedReps = currentSession?.completedReps || 0;
+  const repProgressPercentage = currentSession 
+    ? (completedReps / exercise.reps) * 100
+    : 0;
   
   // Start a new session for this exercise
   const handleStart = (): void => {
-    if (inProgressSessionId) {
-      return; // Already in progress
+    // If we have a session in progress but all reps are complete, cancel it
+    // This happens when starting a new set
+    if (inProgressSessionId && completedReps >= exercise.reps) {
+      dispatch(completeSession({ sessionId: inProgressSessionId }));
     }
     
+    if (inProgressSessionId && completedReps < exercise.reps) {
+      return; // Already in progress with incomplete reps
+    }
+    
+    // Start a new session without automatically starting the timer
     dispatch(startSession(exercise.id));
-    startTimer(exercise.duration);
+    // No automatic timer start - user must click the timer button
   };
   
-  // Complete the current session
-  const handleComplete = (): void => {
+  // Complete the current set - now only used internally
+  const handleCompleteSet = useCallback((): void => {
     if (!inProgressSessionId) {
       return; // No session in progress
     }
     
     dispatch(completeSession({ sessionId: inProgressSessionId }));
-    stopTimer();
+    resetTimer(); // Reset timer for next set
+  }, [inProgressSessionId, dispatch, resetTimer]);
+  
+  // Complete a rep when timer finishes
+  const handleRepComplete = useCallback(() => {
+    if (inProgressSessionId) {
+      dispatch(completeRep({ sessionId: inProgressSessionId }));
+      
+      // If we've completed all reps for this set, automatically complete the set
+      if (completedReps + 1 >= exercise.reps) {
+        handleCompleteSet();
+      } else {
+        // Reset timer but don't start the next rep automatically
+        resetTimer();
+      }
+    }
+  }, [inProgressSessionId, dispatch, completedReps, exercise.reps, resetTimer, handleCompleteSet]);
+  
+  // Start/stop timer for individual rep
+  const handleTimerControl = (): void => {
+    if (!inProgressSessionId) {
+      return; // No session in progress
+    }
+    
+    if (isRunning) {
+      pauseTimer();
+    } else if (seconds === 0) {
+      startTimer(exercise.duration, handleRepComplete);
+    } else {
+      resumeTimer();
+    }
   };
   
   // Cancel the current session
@@ -51,7 +119,7 @@ export const ExerciseItem = ({
     }
     
     dispatch(cancelSession({ sessionId: inProgressSessionId }));
-    stopTimer();
+    resetTimer();
   };
   
   // Delete this exercise
@@ -96,10 +164,10 @@ export const ExerciseItem = ({
         </div>
         <div className="flex justify-between mb-sm">
           <span className="font-medium">Reps:</span>
-          <span>{exercise.reps}</span>
+          <span>{currentSession ? `${completedReps} / ${exercise.reps}` : `${exercise.reps}`}</span>
         </div>
         <div className="flex justify-between mb-sm">
-          <span className="font-medium">Duration:</span>
+          <span className="font-medium">Duration Per Rep:</span>
           <span>{formatDuration(exercise.duration)}</span>
         </div>
         {exercise.description && (
@@ -107,6 +175,7 @@ export const ExerciseItem = ({
         )}
       </div>
       
+      {/* Main progress bar for sets */}
       <div className="progress-bar" role="progressbar" aria-valuenow={progressPercentage} aria-valuemin={0} aria-valuemax={100}>
         <div
           className="progress-fill"
@@ -114,21 +183,68 @@ export const ExerciseItem = ({
         />
       </div>
       
+      {/* Show rep progress when a session is in progress */}
+      {inProgressSessionId && (
+        <div className="rep-progress mt-sm">
+          <div className="text-sm text-center mb-xs">Rep Progress</div>
+          <div className="progress-bar bg-gray-200" role="progressbar" aria-valuenow={repProgressPercentage} aria-valuemin={0} aria-valuemax={100}>
+            <div
+              className="progress-fill bg-green-500"
+              style={{ width: `${repProgressPercentage}%` }}
+            />
+          </div>
+        </div>
+      )}
+      
       <div className="exercise-controls">
         {inProgressSessionId ? (
           <>
-            <div className="timer">{formatDuration(seconds)}</div>
-            <div className="control-buttons">
-              <button
-                onClick={handleComplete}
-                className="btn btn-success"
-                disabled={!isRunning && seconds === 0}
-              >
-                Complete
-              </button>
-              <button onClick={handleCancel} className="btn btn-danger">
-                Cancel
-              </button>
+            {/* Timer display and controls */}
+            <div className="timer-section mb-md">
+              <div className="timer-display flex justify-between items-center mb-sm">
+                <div className="timer text-xl font-bold" data-testid="timer-display">{formatDuration(seconds)}</div>
+                <button
+                  onClick={handleTimerControl}
+                  className={`btn ${isRunning ? 'btn-warning' : 'btn-primary'}`}
+                >
+                  {isRunning ? 'Pause Timer' : seconds > 0 ? 'Resume Timer' : 'Start Rep Timer'}
+                </button>
+              </div>
+            </div>
+            
+            {/* Rep and set controls */}
+            <div className="session-controls">
+              <div className="flex justify-between gap-sm">
+                {completedReps >= exercise.reps ? (
+                  // All reps completed - show next set button
+                  <>
+                    <div className="flex-1 text-center bg-green-100 dark:bg-green-900 p-2 rounded-md">
+                      <span className="text-green-600 dark:text-green-400">Set Complete!</span>
+                    </div>
+                    <button
+                      onClick={handleStart}
+                      className="btn btn-primary flex-1"
+                    >
+                      Start Next Set
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1 bg-blue-100 dark:bg-blue-900 p-2 rounded-md text-center">
+                      <span className="text-blue-600 dark:text-blue-400">
+                        {isRunning ? 'Rep in progress...' : 'Start timer for next rep'}
+                      </span>
+                    </div>
+                  </>
+                )}
+                
+                <button 
+                  onClick={isRunning ? handleTimerControl : handleCancel} 
+                  className={`btn ${isRunning ? 'btn-warning' : 'btn-danger'}`}
+                >
+                  {isRunning ? 'Pause' : 'Cancel'}
+                </button>
+              </div>
             </div>
           </>
         ) : (
@@ -137,7 +253,8 @@ export const ExerciseItem = ({
             className="btn btn-primary w-full"
             disabled={completedCount >= exercise.sets}
           >
-            {completedCount >= exercise.sets ? 'All Sets Completed' : 'Start Exercise'}
+            {completedCount >= exercise.sets ? 'All Sets Completed' : 
+             (currentSession ? 'Resume Exercise' : 'Start Exercise')}
           </button>
         )}
       </div>

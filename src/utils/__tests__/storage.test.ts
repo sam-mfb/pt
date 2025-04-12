@@ -15,7 +15,8 @@ describe('storage utilities', () => {
             exerciseId: '1',
             startTime: '2023-04-15T10:00:00.000Z',
             endTime: '2023-04-15T10:01:30.000Z',
-            completed: true
+            completed: true,
+            completedReps: 10
           }
         ]
       }

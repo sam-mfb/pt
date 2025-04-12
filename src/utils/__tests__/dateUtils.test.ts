@@ -1,4 +1,4 @@
-import { formatDuration, formatDate, getPastDays, formatTime } from '../dateUtils';
+import { formatDuration, formatDate, getPastDays, formatTime, getCurrentDate, parseAppDate } from '../dateUtils';
 
 describe('dateUtils', () => {
   describe('formatDuration', () => {
@@ -9,18 +9,33 @@ describe('dateUtils', () => {
     });
   });
   
+  describe('parseAppDate', () => {
+    it('should correctly parse a YYYY-MM-DD date string', () => {
+      const date = parseAppDate('2023-04-15');
+      expect(date.getFullYear()).toBe(2023);
+      expect(date.getMonth()).toBe(3); // April is 3 (zero-indexed)
+      expect(date.getDate()).toBe(15);
+    });
+    
+    it('should throw an error for invalid date formats', () => {
+      expect(() => parseAppDate('15-04-2023')).toThrow();
+      expect(() => parseAppDate('2023/04/15')).toThrow();
+      expect(() => parseAppDate('not a date')).toThrow();
+    });
+  });
+  
   describe('formatDate', () => {
-    it('should format a date string to a human-readable format', () => {
-      const mockDate = new Date('2023-04-15');
-      const originalDateToLocale = Date.prototype.toLocaleDateString;
-      
-      // Mock the toLocaleDateString function to return a consistent output for testing
-      Date.prototype.toLocaleDateString = jest.fn(() => 'Saturday, April 15, 2023');
-      
-      expect(formatDate('2023-04-15')).toBe('Saturday, April 15, 2023');
-      
-      // Restore original function
-      Date.prototype.toLocaleDateString = originalDateToLocale;
+    it('should format a date string to ISO format without time', () => {
+      expect(formatDate('2023-04-15T12:30:00.000Z')).toBe('2023-04-15');
+      expect(formatDate(new Date('2023-04-15'))).toBe('2023-04-15');
+    });
+    
+    it('should return the same string if already in YYYY-MM-DD format', () => {
+      expect(formatDate('2023-04-15')).toBe('2023-04-15');
+    });
+    
+    it('should handle invalid date strings gracefully', () => {
+      expect(() => formatDate('not-a-date')).toThrow();
     });
   });
   
@@ -36,6 +51,10 @@ describe('dateUtils', () => {
       
       // Restore original function
       Date.prototype.toLocaleTimeString = originalTimeToLocale;
+    });
+    
+    it('should handle invalid time strings gracefully', () => {
+      expect(formatTime('not-a-time')).toBe('Invalid time');
     });
   });
   
@@ -57,6 +76,26 @@ describe('dateUtils', () => {
       
       // Restore original Date.now
       Date.now = originalNow;
+    });
+  });
+  
+  describe('getCurrentDate', () => {
+    it('should return today\'s date in YYYY-MM-DD format', () => {
+      // Mock Date to return a fixed date
+      const fixedDate = new Date('2023-04-15T12:30:00Z');
+      const originalDate = global.Date;
+      
+      // Mock Date constructor to return the fixed date
+      global.Date = jest.fn(() => fixedDate) as any;
+      global.Date.UTC = originalDate.UTC;
+      global.Date.parse = originalDate.parse;
+      global.Date.now = jest.fn(() => fixedDate.getTime());
+      
+      // Test getCurrentDate returns expected date 
+      expect(getCurrentDate()).toBe('2023-04-15');
+      
+      // Restore original Date
+      global.Date = originalDate;
     });
   });
 });

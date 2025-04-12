@@ -1,9 +1,8 @@
-import { Middleware } from '@reduxjs/toolkit';
 import { saveState } from '../utils/storage';
 import { RootState } from '../store';
 
 // Create a middleware that persists state to localStorage
-export const persistMiddleware: Middleware = (store) => (next) => (action) => {
+export const persistMiddleware = (store: any) => (next: any) => (action: any) => {
   // First, dispatch the action to update the state
   const result = next(action);
   

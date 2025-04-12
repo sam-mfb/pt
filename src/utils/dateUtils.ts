@@ -1,23 +1,82 @@
 /**
- * Gets the current date in YYYY-MM-DD format
+ * Standard date format used throughout the application: YYYY-MM-DD
  */
-export const getCurrentDate = (): string => {
-  return new Date().toISOString().split('T')[0];
+export const DATE_FORMAT = 'YYYY-MM-DD';
+
+/**
+ * Parse a string in the app's standard YYYY-MM-DD format to a Date object
+ * This explicitly handles the expected format to avoid timezone/browser inconsistencies
+ */
+export const parseAppDate = (dateString: string): Date => {
+  if (!dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    throw new Error(`Invalid date format: ${dateString}. Expected YYYY-MM-DD`);
+  }
+  
+  const [year, month, day] = dateString.split('-').map(Number);
+  // Create date in local timezone (months are 0-indexed in JS Date)
+  return new Date(year, month - 1, day);
 };
 
 /**
- * Formats a date in a human-readable format
+ * Gets the current date in YYYY-MM-DD format
+ */
+export const getCurrentDate = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Formats a date in YYYY-MM-DD format
+ * This standardizes handling of both Date objects and datestrings
  */
 export const formatDate = (date: Date | string): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toISOString().split('T')[0];
+  let dateObj: Date;
+  
+  if (typeof date === 'string') {
+    // Handle the case when the string is already in our format
+    if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return date;
+    }
+    // Otherwise parse it safely to get the local date
+    try {
+      dateObj = new Date(date);
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        throw new Error(`Invalid date: ${date}`);
+      }
+    } catch (e) {
+      throw new Error(`Invalid date: ${date}`);
+    }
+  } else {
+    dateObj = date;
+  }
+  
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**
  * Formats a date in a full human-readable format (e.g., Monday, January 1, 2023)
  */
 export const formatDateFull = (date: Date | string): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  let dateObj: Date;
+  
+  if (typeof date === 'string') {
+    // If it's in our standard format, parse it correctly
+    if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      dateObj = parseAppDate(date);
+    } else {
+      dateObj = new Date(date);
+    }
+  } else {
+    dateObj = date;
+  }
+  
   const options: Intl.DateTimeFormatOptions = { 
     weekday: 'long', 
     year: 'numeric', 
@@ -32,7 +91,8 @@ export const formatDateFull = (date: Date | string): string => {
  * Gets a relative day name (Today, Yesterday, Tomorrow) if applicable
  */
 export const getRelativeDay = (dateString: string): string => {
-  const date = new Date(dateString);
+  // Always use the app's standard date parsing
+  const date = parseAppDate(dateString);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -60,13 +120,26 @@ export const getRelativeDay = (dateString: string): string => {
 
 /**
  * Formats time in a human-readable format (HH:MM AM/PM)
+ * Takes ISO timestamp strings (like those from toISOString())
  */
 export const formatTime = (timeString: string): string => {
-  const date = new Date(timeString);
-  return date.toLocaleTimeString(undefined, { 
-    hour: '2-digit', 
-    minute: '2-digit'
-  });
+  // ISO timestamp strings are always in UTC, so we need to ensure
+  // they're displayed in the user's local time
+  try {
+    const date = new Date(timeString);
+    
+    // If the date is invalid, throw an error
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date: ${timeString}`);
+    }
+    
+    return date.toLocaleTimeString(undefined, { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return 'Invalid time';
+  }
 };
 
 /**
@@ -89,7 +162,11 @@ export const getPastDays = (days: number): string[] => {
   for (let i = 0; i < days; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
-    dates.push(date.toISOString().split('T')[0]);
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
   }
   
   return dates;

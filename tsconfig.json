@@ -18,7 +18,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsxImportSource": "react",
-    "types": ["react/jsx-runtime"]
+    "types": ["react/jsx-runtime", "node", "jest"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

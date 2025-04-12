@@ -4,7 +4,7 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { ExerciseForm } from './ExerciseForm';
 import { ExerciseItem } from './ExerciseItem';
 
-export const ExerciseList = (): JSX.Element => {
+export const ExerciseList = () => {
   const exercises = useAppSelector((state) => state.exercises.items);
   const currentDate = useAppSelector((state) => state.sessions.currentDate);
   const history = useAppSelector((state) => state.sessions.history);
@@ -13,7 +13,7 @@ export const ExerciseList = (): JSX.Element => {
   const [editingExercise, setEditingExercise] = useState<Exercise | undefined>(undefined);
   
   // Get today's record
-  const todayRecord = history.find((record) => record.date === currentDate);
+  const todayRecord = history.find((record: any) => record.date === currentDate);
   const todaySessions = todayRecord ? todayRecord.sessions : [];
   
   // Handle edit exercise
@@ -69,15 +69,15 @@ export const ExerciseList = (): JSX.Element => {
         </div>
       ) : (
         <div className="exercise-grid">
-          {exercises.map((exercise) => {
+          {exercises.map((exercise: any) => {
             // Check how many times this exercise has been completed today
             const completedSessions = todaySessions.filter(
-              (session) => session.exerciseId === exercise.id && session.completed
+              (session: any) => session.exerciseId === exercise.id && session.completed
             );
             
             // Is this exercise currently in progress?
             const inProgressSession = todaySessions.find(
-              (session) => session.exerciseId === exercise.id && !session.completed
+              (session: any) => session.exerciseId === exercise.id && !session.completed
             );
             
             return (

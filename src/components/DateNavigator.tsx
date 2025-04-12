@@ -2,23 +2,23 @@ import { useState } from 'react';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { setCurrentDate } from '../store/slices/sessionSlice';
-import { formatDateFull, formatDate, getRelativeDay } from '../utils/dateUtils';
+import { formatDateFull, formatDate, getRelativeDay, parseAppDate } from '../utils/dateUtils';
 
-export const DateNavigator = (): JSX.Element => {
+export const DateNavigator = () => {
   const dispatch = useAppDispatch();
   const currentDate = useAppSelector((state) => state.sessions.currentDate);
   const [showCalendar, setShowCalendar] = useState(false);
   
   // Navigate to previous day
   const handlePrevDay = (): void => {
-    const date = new Date(currentDate);
+    const date = parseAppDate(currentDate);
     date.setDate(date.getDate() - 1);
     dispatch(setCurrentDate(formatDate(date)));
   };
   
   // Navigate to next day
   const handleNextDay = (): void => {
-    const date = new Date(currentDate);
+    const date = parseAppDate(currentDate);
     date.setDate(date.getDate() + 1);
     dispatch(setCurrentDate(formatDate(date)));
   };
@@ -42,7 +42,7 @@ export const DateNavigator = (): JSX.Element => {
         
         <div className="date-display text-center" onClick={() => setShowCalendar(!showCalendar)}>
           <h3 className="text-lg font-medium">{relativeDay}</h3>
-          <p className="text-md text-primary font-semibold">{formatDateFull(new Date(currentDate))}</p>
+          <p className="text-md text-primary font-semibold">{formatDateFull(currentDate)}</p>
         </div>
         
         <button onClick={handleNextDay} className="btn-icon" aria-label="Next day">

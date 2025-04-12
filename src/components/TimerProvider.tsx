@@ -8,29 +8,49 @@ interface TimerProviderProps {
   children: ReactNode;
 }
 
-export const TimerProvider = ({ children }: TimerProviderProps): JSX.Element => {
+export const TimerProvider = ({ children }: TimerProviderProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [duration, setDuration] = useState(0);
+  // Add a callback for when timer completes
+  const [onComplete, setOnComplete] = useState<(() => void) | null>(null);
   
-  // Reset timer
+  // Reset timer to zero without changing duration
   const resetTimer = useCallback((): void => {
     setIsRunning(false);
     setSeconds(0);
-    setDuration(0);
+    setOnComplete(null);
   }, []);
   
-  // Start timer with a specified duration
-  const startTimer = useCallback((newDuration: number): void => {
+  // Start timer with a specified duration and optional completion callback
+  const startTimer = useCallback((newDuration: number, completeCallback?: () => void): void => {
     setDuration(newDuration);
     setSeconds(newDuration);
     setIsRunning(true);
+    if (completeCallback) {
+      setOnComplete(() => completeCallback);
+    } else {
+      setOnComplete(null);
+    }
   }, []);
   
-  // Stop timer
-  const stopTimer = useCallback((): void => {
+  // Pause the current timer without resetting
+  const pauseTimer = useCallback((): void => {
     setIsRunning(false);
   }, []);
+  
+  // Resume the current timer
+  const resumeTimer = useCallback((): void => {
+    if (seconds > 0) {
+      setIsRunning(true);
+    }
+  }, [seconds]);
+  
+  // Restart the timer with the current duration
+  const restartTimer = useCallback((): void => {
+    setSeconds(duration);
+    setIsRunning(true);
+  }, [duration]);
   
   // Timer effect
   useEffect(() => {
@@ -43,14 +63,9 @@ export const TimerProvider = ({ children }: TimerProviderProps): JSX.Element => 
     } else if (isRunning && seconds === 0) {
       setIsRunning(false);
       
-      // Notify user that the timer is complete
-      if ('Notification' in window && Notification.permission === 'granted') {
-        // eslint-disable-next-line no-new
-        new Notification('PT Exercise Timer', {
-          body: 'Time\'s up! Exercise complete.',
-        });
-      } else if ('Notification' in window && Notification.permission !== 'denied') {
-        Notification.requestPermission();
+      // Execute callback when timer reaches zero
+      if (onComplete) {
+        onComplete();
       }
     }
     
@@ -59,10 +74,19 @@ export const TimerProvider = ({ children }: TimerProviderProps): JSX.Element => 
         clearInterval(interval);
       }
     };
-  }, [isRunning, seconds]);
+  }, [isRunning, seconds, onComplete]);
   
   return (
-    <TimerContext.Provider value={{ isRunning, seconds, startTimer, stopTimer, resetTimer }}>
+    <TimerContext.Provider value={{ 
+      isRunning, 
+      seconds, 
+      duration,
+      startTimer, 
+      pauseTimer, 
+      resumeTimer, 
+      resetTimer,
+      restartTimer 
+    }}>
       {children}
     </TimerContext.Provider>
   );

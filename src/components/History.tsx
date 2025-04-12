@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { formatDateFull, formatTime, formatDuration } from '../utils/dateUtils';
 
-export const History = (): JSX.Element => {
+export const History = () => {
   const exercises = useAppSelector((state) => state.exercises.items);
   const history = useAppSelector((state) => state.sessions.history);
   
@@ -24,9 +24,9 @@ export const History = (): JSX.Element => {
       return { totalSessions: 0, totalTime: 0 };
     }
     
-    const completedSessions = selectedRecord.sessions.filter((session) => session.completed);
+    const completedSessions = selectedRecord.sessions.filter((session: any) => session.completed);
     
-    const totalTime = completedSessions.reduce((total, session) => {
+    const totalTime = completedSessions.reduce((total: number, session: any) => {
       const startTime = new Date(session.startTime).getTime();
       const endTime = new Date(session.endTime).getTime();
       return total + (endTime - startTime) / 1000; // Convert to seconds
@@ -80,7 +80,7 @@ export const History = (): JSX.Element => {
           {selectedRecord && (
             <div className="day-details col-span-1 md:col-span-2 card">
               <div className="day-header border-b border-gray-200 dark:border-gray-700 pb-md mb-md">
-                <h3 className="font-semibold mb-sm">{formatDateFull(selectedRecord.date)}</h3>
+                <h3 className="font-semibold mb-sm" data-testid="selected-date-heading">{formatDateFull(selectedRecord.date)}</h3>
                 <div className="day-stats grid grid-cols-2 gap-md">
                   <div className="stat bg-gray-100 dark:bg-gray-800 p-md rounded-md">
                     <span className="stat-label block text-sm text-gray-600 dark:text-gray-400">Completed Sessions</span>
@@ -109,9 +109,9 @@ export const History = (): JSX.Element => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedRecord.sessions.map((session) => {
+                        {selectedRecord.sessions.map((session: any) => {
                           // Find the exercise name
-                          const exercise = exercises.find((ex) => ex.id === session.exerciseId);
+                          const exercise = exercises.find((ex: any) => ex.id === session.exerciseId);
                           
                           // Calculate duration
                           let duration = 0;

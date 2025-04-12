@@ -116,5 +116,5 @@ The application uses:
 
 1. **Data Synchronization** - Currently all data is local, but could be extended to sync with a backend
 2. **Offline Support** - Already works offline by design
-3. **Notifications** - Basic browser notifications are implemented, but could be enhanced
+3. **Progress Tracking** - Additional statistics and progress visualization could be implemented
 4. **Mobile Optimization** - The UI is responsive but could be further optimized for mobile

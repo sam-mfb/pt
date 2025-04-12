@@ -4,6 +4,7 @@ import sessionReducer from './slices/sessionSlice';
 import uiReducer from './slices/uiSlice';
 import { loadState } from '../utils/storage';
 import { persistMiddleware } from '../middleware/persistMiddleware';
+import { getCurrentDate } from '../utils/dateUtils';
 
 // Load state from localStorage
 const preloadedState = loadState();
@@ -14,9 +15,9 @@ const transformedPreloadedState = preloadedState
       exercises: { items: preloadedState.exercises },
       sessions: {
         history: preloadedState.history,
-        currentDate: preloadedState.currentDate,
+        currentDate: getCurrentDate(), // Always reset to today when app loads
       },
-      ui: { activeTab: 'exercises', importDialogOpen: false },
+      ui: { activeTab: 'exercises' as const, importDialogOpen: false },
     }
   : undefined;
 
@@ -28,13 +29,15 @@ export const store = configureStore({
     ui: uiReducer,
   },
   preloadedState: transformedPreloadedState,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
+  middleware: (getDefaultMiddleware) => {
+    const defaultMiddleware = getDefaultMiddleware({
       serializableCheck: {
         // Ignore these action types
         ignoredActions: ['ui/setImportDialogOpen'],
       },
-    }).concat(persistMiddleware),
+    });
+    return defaultMiddleware.concat(persistMiddleware);
+  },
 });
 
 // Export types for state and dispatch

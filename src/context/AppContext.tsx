@@ -56,6 +56,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         startTime: new Date().toISOString(),
         endTime: '', // Will be set when completed
         completed: false,
+        completedReps: 0,
       };
       
       // Find or create today's record

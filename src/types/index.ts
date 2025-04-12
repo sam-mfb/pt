@@ -13,6 +13,7 @@ export interface ExerciseSession {
   startTime: string; // ISO string
   endTime: string; // ISO string
   completed: boolean;
+  completedReps: number; // Track how many reps were completed
   notes?: string;
 }
 
@@ -40,9 +41,12 @@ export type AppAction =
 export interface TimerContextType {
   isRunning: boolean;
   seconds: number;
-  startTimer: (duration: number) => void;
-  stopTimer: () => void;
+  duration: number;
+  startTimer: (duration: number, completeCallback?: () => void) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
   resetTimer: () => void;
+  restartTimer: () => void; // Reset and start again with same duration
 }
 
 // Enable JSX in TypeScript

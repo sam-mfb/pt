@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TimerProvider } from './components/TimerProvider';
 import { ExerciseList } from './components/ExerciseList';
 import { History } from './components/History';
@@ -7,10 +7,16 @@ import { DataControls } from './components/DataControls';
 import { useAppSelector } from './hooks/useAppSelector';
 import { useAppDispatch } from './hooks/useAppDispatch';
 import { setActiveTab } from './store/slices/uiSlice';
+import { resetToToday } from './store/slices/sessionSlice';
 
-const App = (): JSX.Element => {
+export const App = () => {
   const activeTab = useAppSelector((state) => state.ui.activeTab);
   const dispatch = useAppDispatch();
+  
+  // Always reset to today's date when the app loads
+  useEffect(() => {
+    dispatch(resetToToday());
+  }, [dispatch]);
 
   const handleTabChange = (tab: 'exercises' | 'history'): void => {
     dispatch(setActiveTab(tab));
@@ -71,4 +77,4 @@ const App = (): JSX.Element => {
   );
 };
 
-export default App;
+// We're exporting App as a named export above

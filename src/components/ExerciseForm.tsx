@@ -8,7 +8,7 @@ interface ExerciseFormProps {
   onClose: () => void;
 }
 
-export const ExerciseForm = ({ exercise, onClose }: ExerciseFormProps): JSX.Element => {
+export const ExerciseForm = ({ exercise, onClose }: ExerciseFormProps) => {
   const dispatch = useAppDispatch();
   const [name, setName] = useState('');
   const [sets, setSets] = useState(3);
@@ -84,7 +84,7 @@ export const ExerciseForm = ({ exercise, onClose }: ExerciseFormProps): JSX.Elem
     <form onSubmit={handleSubmit} className="exercise-form card">
       <h2 className="text-xl font-semibold mb-lg">{exercise ? 'Edit Exercise' : 'Add New Exercise'}</h2>
       
-      {formError && <div className="error-message mb-lg">{formError}</div>}
+      {formError && <div className="error-message mb-lg" role="alert" data-testid="form-error">{formError}</div>}
       
       <div className="form-group">
         <label htmlFor="name">
