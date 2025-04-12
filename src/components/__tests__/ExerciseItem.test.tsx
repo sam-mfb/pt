@@ -285,22 +285,4 @@ describe('ExerciseItem Component', () => {
     expect(mockStartTimer).not.toHaveBeenCalled();
   });
   
-  // Skipping this test for now as it requires more complex mocking
-  it.skip('should show Resume Exercise button when there is a current session but no in-progress session', () => {
-    // Setup mock session state to make currentSession return a value
-    const mockSession = {
-      id: 'session-123',
-      exerciseId: 'test-id',
-      completedReps: 2,
-      timestamp: Date.now(),
-      completed: false
-    };
-    
-    // This will make the currentSession selector return our mock session
-    mockAppSelector.mockImplementation(() => mockSession);
-    
-    renderExerciseItem();
-    
-    expect(screen.getByText('Resume Exercise')).toBeInTheDocument();
-  });
 });

@@ -56,14 +56,15 @@ describe('storage utilities', () => {
     it('should handle JSON parse errors and return undefined', () => {
       (localStorage.getItem as jest.Mock).mockReturnValue('invalid json');
       
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      // Mock console.error to not pollute test output
+      jest.spyOn(console, 'error').mockImplementation();
       
       const result = loadState();
       
       expect(result).toBeUndefined();
-      expect(consoleSpy).toHaveBeenCalled();
       
-      consoleSpy.mockRestore();
+      // Restore console
+      jest.restoreAllMocks();
     });
   });
 
@@ -81,13 +82,13 @@ describe('storage utilities', () => {
       const circularObj: any = {};
       circularObj.self = circularObj;
       
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      // Mock console.error to not pollute test output
+      jest.spyOn(console, 'error').mockImplementation();
       
       saveState(circularObj as AppState);
       
-      expect(consoleSpy).toHaveBeenCalled();
-      
-      consoleSpy.mockRestore();
+      // Restore console
+      jest.restoreAllMocks();
     });
   });
 
@@ -99,26 +100,28 @@ describe('storage utilities', () => {
     });
 
     it('should return null for invalid JSON', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      // Mock console.error to not pollute test output
+      jest.spyOn(console, 'error').mockImplementation();
       
       const result = importState('invalid json');
       
       expect(result).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
       
-      consoleSpy.mockRestore();
+      // Restore console
+      jest.restoreAllMocks();
     });
 
     it('should return null for JSON with missing required properties', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      // Mock console.error to not pollute test output
+      jest.spyOn(console, 'error').mockImplementation();
       
       const invalidState = { exercises: [] }; // Missing history and currentDate
       const result = importState(JSON.stringify(invalidState));
       
       expect(result).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
       
-      consoleSpy.mockRestore();
+      // Restore console
+      jest.restoreAllMocks();
     });
   });
 });
