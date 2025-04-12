@@ -37,8 +37,12 @@ export const ExerciseList = (): JSX.Element => {
   return (
     <div className="exercise-list">
       <div className="exercise-list-header">
-        <h2>Your Exercises</h2>
-        <button onClick={handleAddNew} className="btn-primary">
+        <h2 className="text-xl font-semibold">Your Exercises</h2>
+        <button onClick={handleAddNew} className="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-xs">
+            <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           Add New Exercise
         </button>
       </div>
@@ -53,7 +57,15 @@ export const ExerciseList = (): JSX.Element => {
       
       {exercises.length === 0 ? (
         <div className="empty-state">
-          <p>You haven't added any exercises yet. Get started by adding your first exercise!</p>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-lg opacity-50">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 16H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <p className="mb-md">You haven't added any exercises yet.</p>
+          <button onClick={handleAddNew} className="btn btn-primary">
+            Get Started
+          </button>
         </div>
       ) : (
         <div className="exercise-grid">

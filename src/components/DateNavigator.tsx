@@ -1,68 +1,67 @@
-import { useAppSelector } from '../hooks/useAppSelector';
+import { useState } from 'react';
 import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useAppSelector } from '../hooks/useAppSelector';
 import { setCurrentDate } from '../store/slices/sessionSlice';
-import { formatDate, getCurrentDate } from '../utils/dateUtils';
+import { formatDateFull, formatDate, getRelativeDay } from '../utils/dateUtils';
 
 export const DateNavigator = (): JSX.Element => {
-  const currentDate = useAppSelector((state) => state.sessions.currentDate);
   const dispatch = useAppDispatch();
+  const currentDate = useAppSelector((state) => state.sessions.currentDate);
+  const [showCalendar, setShowCalendar] = useState(false);
   
-  // Go to previous day
-  const goToPreviousDay = (): void => {
+  // Navigate to previous day
+  const handlePrevDay = (): void => {
     const date = new Date(currentDate);
     date.setDate(date.getDate() - 1);
-    const previousDay = date.toISOString().split('T')[0];
-    
-    dispatch(setCurrentDate(previousDay));
+    dispatch(setCurrentDate(formatDate(date)));
   };
   
-  // Go to next day (but not beyond today)
-  const goToNextDay = (): void => {
+  // Navigate to next day
+  const handleNextDay = (): void => {
     const date = new Date(currentDate);
     date.setDate(date.getDate() + 1);
-    const nextDay = date.toISOString().split('T')[0];
-    const today = getCurrentDate();
-    
-    // Don't allow going beyond today
-    if (nextDay <= today) {
-      dispatch(setCurrentDate(nextDay));
-    }
+    dispatch(setCurrentDate(formatDate(date)));
   };
   
-  // Go to today
-  const goToToday = (): void => {
-    const today = getCurrentDate();
-    dispatch(setCurrentDate(today));
+  // Navigate to today
+  const handleToday = (): void => {
+    dispatch(setCurrentDate(formatDate(new Date())));
   };
   
-  // Check if current date is today
-  const isToday = currentDate === getCurrentDate();
+  // Get relative day name (Today, Yesterday, etc)
+  const relativeDay = getRelativeDay(currentDate);
   
   return (
-    <div className="date-navigator">
-      <button onClick={goToPreviousDay} className="btn-icon" aria-label="Previous day">
-        ←
-      </button>
-      
-      <div className="current-date">
-        <button
-          onClick={goToToday}
-          className={`today-button ${isToday ? 'disabled' : ''}`}
-          disabled={isToday}
-        >
-          {isToday ? 'Today' : 'Go to Today'}
+    <div className="date-navigator card mb-lg">
+      <div className="flex justify-between items-center">
+        <button onClick={handlePrevDay} className="btn-icon" aria-label="Previous day">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
-        <h2>{formatDate(currentDate)}</h2>
+        
+        <div className="date-display text-center" onClick={() => setShowCalendar(!showCalendar)}>
+          <h3 className="text-lg font-medium">{relativeDay}</h3>
+          <p className="text-md text-primary font-semibold">{formatDateFull(new Date(currentDate))}</p>
+        </div>
+        
+        <button onClick={handleNextDay} className="btn-icon" aria-label="Next day">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
       </div>
       
-      <button
-        onClick={goToNextDay}
-        className={`btn-icon ${isToday ? 'disabled' : ''}`}
-        disabled={isToday}
-        aria-label="Next day"
-      >
-        →
-      </button>
+      {/* Quick Navigation */}
+      <div className="date-shortcuts mt-md flex gap-sm justify-center">
+        <button
+          onClick={handleToday}
+          className="btn btn-secondary text-sm"
+          disabled={relativeDay === 'Today'}
+        >
+          Today
+        </button>
+      </div>
     </div>
   );
 };
