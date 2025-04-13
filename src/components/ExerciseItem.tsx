@@ -254,7 +254,8 @@ export const ExerciseItem = ({
             disabled={completedCount >= exercise.sets}
           >
             {completedCount >= exercise.sets ? 'All Sets Completed' : 
-             (currentSession ? 'Resume Exercise' : 'Start Exercise')}
+             (currentSession ? 'Resume Exercise' : 
+              completedCount > 0 ? `Start Set ${completedCount + 1}/${exercise.sets}` : 'Start Exercise')}
           </button>
         )}
       </div>
