@@ -43,8 +43,9 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 button:hover {
   border-color: #646cff;
@@ -102,12 +103,15 @@ button:disabled {
   margin-bottom: 1.5rem;
   max-height: 400px;
   overflow-y: auto;
+  padding: 0.5rem;
 }
 
 .exercise-library-item {
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
 }
 
 .exercise-library-item-header {
@@ -128,6 +132,8 @@ button:disabled {
   }
   button {
     background-color: #f9f9f9;
+    color: #213547;
+    border: 1px solid #e0e0e0;
   }
   .card {
     background-color: #ffffff;
@@ -137,5 +143,8 @@ button:disabled {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     color: #213547;
+  }
+  .exercise-library-item {
+    border-color: #e0e0e0;
   }
 }

@@ -30,6 +30,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
+  border: 1px solid transparent;
 }
 
 .btn:disabled {
@@ -59,6 +60,7 @@
   .btn-secondary {
     background-color: var(--gray-700);
     color: var(--gray-200);
+    border: 1px solid var(--gray-600);
   }
   
   .btn-secondary:hover:not(:disabled) {
@@ -92,16 +94,38 @@
   justify-content: center;
   border-radius: var(--radius-full);
   background-color: transparent;
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  color: var(--gray-700);
 }
 
 .btn-icon:hover {
   background-color: var(--gray-200);
+  color: var(--primary);
 }
 
 @media (prefers-color-scheme: dark) {
+  .btn-icon {
+    color: var(--gray-500);
+    border: 1px solid var(--gray-700);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  
   .btn-icon:hover {
     background-color: var(--gray-800);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  
+  .btn-primary {
+    border: 1px solid var(--primary-hover);
+  }
+  
+  .btn-danger {
+    border: 1px solid #d93d60;
+  }
+  
+  .btn-success {
+    border: 1px solid #05b989;
   }
 }
 
@@ -184,11 +208,17 @@ textarea:focus {
   max-height: 90vh;
   overflow-y: auto;
   animation: modalFadeIn 0.3s ease;
+  padding: var(--space-md);
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-content {
     background-color: var(--card-dark);
+    border: 1px solid var(--border-dark);
+  }
+  
+  .exercise-library-item {
+    border-color: var(--border-dark);
   }
 }
 

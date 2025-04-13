@@ -67,14 +67,16 @@ nav {
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-medium);
-  transition: background-color var(--transition-normal);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
   color: var(--gray-700);
   background-color: transparent;
+  border: 1px solid transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   .tab-button {
-    color: var(--gray-400);
+    color: var(--gray-300);
+    border: 1px solid var(--gray-700);
   }
 }
 
